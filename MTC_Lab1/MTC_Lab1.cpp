@@ -1,17 +1,15 @@
-// MTC_Lab1.cpp : Defines the entry point for the console application.
-//
-
 #include "stdafx.h"
 #include <omp.h>
 #include <time.h> 
 #include <sstream>
 #include <iostream>
+#include <fstream>
 
 using namespace std;
 
-// ќбъ€вл€ем переменные
 const int numberOfThreads = 8;
-int n = 10; // размер матрицы
+
+int n = 10;
 int i, j, k;
 
 void initMatrix(int n, __int32 **M);
@@ -21,7 +19,12 @@ double doCalculations(int n);
 
 int _tmain(int argc, _TCHAR* argv[])
 {
-	omp_set_num_threads(n);
+	omp_set_num_threads(numberOfThreads);
+	string outputStr = "";
+
+	cout	<< "Number of threads: " 
+			<< numberOfThreads 
+			<< endl << endl;
 
 	for (n = 10; n <= 100; n += 10)
 	{
@@ -31,14 +34,14 @@ int _tmain(int argc, _TCHAR* argv[])
 		{
 			duration += doCalculations(n);
 		}
-		cout << "[" << n << " x " << n << "]";
-		cout << endl;
-		cout << "Avg duration: " << duration / repeatCount << " seconds.";
-		cout << endl;
-	}
+		outputStr += n + "\t" + to_string(duration / repeatCount) + "\n";
 
-	cout << endl;
-	cout << endl;
+		cout	<< "[" << n << " x " << n << "]"
+				<< endl
+				<< "Avg duration: " << duration / repeatCount << " seconds."
+				<< endl;
+	}
+	cout << endl << endl;
 
 	for (n = 100; n <= 1000; n += 100)
 	{
@@ -48,12 +51,20 @@ int _tmain(int argc, _TCHAR* argv[])
 		{
 			duration += doCalculations(n);
 		}
-		cout << "[" << n << " x " << n << "]";
-		cout << endl;
-		cout << "Avg duration: " << duration / repeatCount << " seconds.";
-		cout << endl;
-	}
+		outputStr += n + "\t" + to_string(duration / repeatCount) + "\n";
 
+		cout	<< "[" << n << " x " << n << "]"
+				<< endl
+				<< "Avg duration: " << duration / repeatCount << " seconds."
+				<< endl;
+	}
+	cout << endl << endl;
+
+	ofstream outputFile;
+	string fileName = "output" + to_string(numberOfThreads) + ".txt";
+	outputFile.open(fileName);
+	outputFile << outputStr;
+	outputFile.close();
 
 	system("pause");
 
@@ -86,13 +97,14 @@ double doCalculations(int n)
 	//cout << endl;
 
 	start = omp_get_wtime();
+
 #pragma omp parallel for private(i,j,k)
-	for (i = 0; i<n; i++)
+	for (i = 0; i < n; i++)
 	{
-		for (k = 0; k<n; k++)
+		for (k = 0; k < n; k++)
 		{
 			sum = 0;
-			for (j = 0; j<n; j++)
+			for (j = 0; j < n; j++)
 			{
 				sum += MatrixA[i][j] * MatrixB[j][k];
 			}
