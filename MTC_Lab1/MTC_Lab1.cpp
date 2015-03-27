@@ -11,55 +11,106 @@ using namespace std;
 
 // ќбъ€вл€ем переменные
 const int numberOfThreads = 8;
-int n = 100; // размер матрицы
-__int32 sum;
-int _i, _j, _k;
+int n = 10; // размер матрицы
+int i, j, k;
 
+void initMatrix(int n, __int32 **M);
 void fillMatrix(int n, __int32 **M);
+void printMatrix(int n, __int32 **M);
+double doCalculations(int n);
 
 int _tmain(int argc, _TCHAR* argv[])
+{
+	omp_set_num_threads(n);
+
+	for (n = 10; n <= 100; n += 10)
+	{
+		double duration = 0;
+		int repeatCount = 10;
+		for (int t = 0; t < repeatCount; ++t)
+		{
+			duration += doCalculations(n);
+		}
+		cout << "[" << n << " x " << n << "]";
+		cout << endl;
+		cout << "Avg duration: " << duration / repeatCount << " seconds.";
+		cout << endl;
+	}
+
+	cout << endl;
+	cout << endl;
+
+	for (n = 100; n <= 1000; n += 100)
+	{
+		double duration = 0;
+		int repeatCount = 5;
+		for (int t = 0; t < repeatCount; ++t)
+		{
+			duration += doCalculations(n);
+		}
+		cout << "[" << n << " x " << n << "]";
+		cout << endl;
+		cout << "Avg duration: " << duration / repeatCount << " seconds.";
+		cout << endl;
+	}
+
+
+	system("pause");
+
+	return 0;
+}
+
+double doCalculations(int n)
 {
 	__int32 **MatrixA = new __int32*[n];
 	__int32 **MatrixB = new __int32*[n];
 	__int32 **MatrixC = new __int32*[n];
-	
-	for (int i = 0; i < n; ++i)
-	{
-		MatrixA[i] = new __int32[n];
-	}
-	for (int i = 0; i < n; ++i)
-	{
-		MatrixB[i] = new __int32[n];
-	}
-	for (int i = 0; i < n; ++i)
-	{
-		MatrixC[i] = new __int32[n];
-	}
+	__int32 sum;
+
+	double start = 0;
+	double end = 0;
+
+	initMatrix(n, MatrixA);
+	initMatrix(n, MatrixB);
+	initMatrix(n, MatrixC);
 
 	fillMatrix(n, MatrixA);
 	fillMatrix(n, MatrixB);
-	fillMatrix(n, MatrixC);
 
-#pragma omp parallel for private(_i,_j,_k)
-	for (_i = 0; _i<n; _i++)
+	//printMatrix(n, MatrixA);
+	//cout << endl;
+	//cout << endl;
+
+	//printMatrix(n, MatrixB);
+	//cout << endl;
+	//cout << endl;
+
+	start = omp_get_wtime();
+#pragma omp parallel for private(i,j,k)
+	for (i = 0; i<n; i++)
 	{
-		for (_k = 0; _k<n; _k++)
+		for (k = 0; k<n; k++)
 		{
 			sum = 0;
-			for (_j = 0; _j<n; _j++)
+			for (j = 0; j<n; j++)
 			{
-				sum += MatrixA[_i][_j] * MatrixB[_j][_k];
+				sum += MatrixA[i][j] * MatrixB[j][k];
 			}
-			MatrixC[_i][_k] = sum;
+			MatrixC[i][k] = sum;
 		}
 	}
 
-	cout << std::to_string(sum);
+	end = omp_get_wtime();
 
-	string str = "";
-	cin >> str;
+	return end - start;
+}
 
-	return 0;
+void initMatrix(int n, __int32 **M)
+{
+	for (int i = 0; i < n; ++i)
+	{
+		M[i] = new __int32[n];
+	}
 }
 
 void fillMatrix(int n, __int32 **M)
@@ -72,5 +123,17 @@ void fillMatrix(int n, __int32 **M)
 		{
 			M[i][j] = rand() % 100 + 1;
 		}
+	}
+}
+
+void printMatrix(int n, __int32 **M)
+{
+	for (int i = 0; i < n; ++i)
+	{
+		for (int j = 0; j < n; ++j)
+		{
+			cout << M[i][j] << "\t";
+		}
+		cout << endl;
 	}
 }
