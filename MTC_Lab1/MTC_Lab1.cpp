@@ -26,7 +26,7 @@ int _tmain(int argc, _TCHAR* argv[])
 			<< numberOfThreads 
 			<< endl << endl;
 
-	for (n = 10; n <= 100; n += 10)
+	for (n = 10; n < 100; n += 10)
 	{
 		double duration = 0;
 		int repeatCount = 10;
@@ -34,7 +34,7 @@ int _tmain(int argc, _TCHAR* argv[])
 		{
 			duration += doCalculations(n);
 		}
-		outputStr += n + "\t" + to_string(duration / repeatCount) + "\n";
+		outputStr += to_string(n) + "\t" + to_string(duration / repeatCount) + "\n";
 
 		cout	<< "[" << n << " x " << n << "]"
 				<< endl
@@ -51,7 +51,7 @@ int _tmain(int argc, _TCHAR* argv[])
 		{
 			duration += doCalculations(n);
 		}
-		outputStr += n + "\t" + to_string(duration / repeatCount) + "\n";
+		outputStr += to_string(n) + "\t" + to_string(duration / repeatCount) + "\n";
 
 		cout	<< "[" << n << " x " << n << "]"
 				<< endl
@@ -62,7 +62,7 @@ int _tmain(int argc, _TCHAR* argv[])
 
 	ofstream outputFile;
 	string fileName = "output" + to_string(numberOfThreads) + ".txt";
-	outputFile.open(fileName);
+	outputFile.open(fileName, fstream::out | fstream::app);
 	outputFile << outputStr;
 	outputFile.close();
 
@@ -98,7 +98,7 @@ double doCalculations(int n)
 
 	start = omp_get_wtime();
 
-#pragma omp parallel for private(i,j,k)
+#pragma omp parallel for shared(MatrixA, MatrixB, MatrixC) private(i, j,k)
 	for (i = 0; i < n; i++)
 	{
 		for (k = 0; k < n; k++)
